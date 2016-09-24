@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class CharacterController : MonoBehaviour {
-
+public class CharacterController : MonoBehaviour
+{
     public float maxSpeed = 20f;
+
+    private float movement;
 
     private Vector2 direction = Vector2.right;
 
@@ -17,12 +18,11 @@ public class CharacterController : MonoBehaviour {
 
     public LayerMask whatIsGround;
 
-    private float groundRadius = 0.6f;
-
-    public int jumpForce = 600;
+    public int jumpForce = 10500;
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         animator = GetComponent<Animator>();
         rigidBody = GetComponent<Rigidbody2D>();
     }
@@ -32,35 +32,38 @@ public class CharacterController : MonoBehaviour {
         //если персонаж на земле и нажат пробел...
         if (isGrounded && Input.GetKeyDown(KeyCode.Space))
         {
-            //устанавливаем в аниматоре переменную в false
             animator.SetBool("Grounded", false);
-            //прикладываем силу вверх, чтобы персонаж подпрыгнул
             rigidBody.AddForce(new Vector2(0, jumpForce));
         }
     }
 
     // Update is called once per frame
-    void FixedUpdate ()
+    void FixedUpdate()
     {
         isGrounded = groundCheck.GetComponent<Collider2D>().IsTouchingLayers(whatIsGround);
 
         animator.SetBool("Grounded", isGrounded);
         animator.SetFloat("vSpeed", rigidBody.velocity.y);
 
-        var movement = Input.GetAxisRaw("Horizontal");
-        if(isGrounded)
+        movement = Input.GetAxisRaw("Horizontal");
+        if (isGrounded)
         {
-            rigidBody.velocity = new Vector2(movement * maxSpeed , rigidBody.velocity.y);
+            rigidBody.velocity = new Vector2(movement * maxSpeed, rigidBody.velocity.y);
 
-        } else
+        }
+        else
         {
             rigidBody.velocity = new Vector2(rigidBody.velocity.x * 0.5f + movement * maxSpeed * 0.3f, rigidBody.velocity.y);
         }
 
+        if (isGrounded)
+            ToggleRunAnimation(movement);
 
-        if(isGrounded)
-        ToggleRunAnimation(movement);
+        ToggleDirection(movement);
+    }
 
+    private void ToggleDirection(float movement)
+    {
         if (movement > 0)
         {
             direction = Vector2.right;
